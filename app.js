@@ -14,9 +14,8 @@ app.set('view engine', 'pug');
 app.set('views', __dirname + '/views');
 
 // app routes
-app.get('/', (req, res) => {
-  res.send('hello world!');
-});
+const routes = require('./routes/index');
+app.use('/', routes);
 
 // catch 404 and forward to error handler
 app.use( (req, res, next) => {
