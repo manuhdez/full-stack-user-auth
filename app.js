@@ -14,15 +14,17 @@ app.set('view engine', 'pug');
 app.set('views', __dirname + '/views');
 
 // app routes
-const routes = require('./routes/index');
-app.use('/', routes);
+const homeRoutes = require('./routes/index');
+const usersRoutes = require('./routes/user');
+app.use('/', homeRoutes);
+app.use('/users', usersRoutes);
 
 // catch 404 and forward to error handler
 app.use( (req, res, next) => {
   const err = new Error('File not found');
   err.status = 404;
   return next(err);
-})
+});
 
 // error handler
 app.use( (err, req, res, next) => {
