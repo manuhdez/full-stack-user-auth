@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const mongoose = require('mongoose');
 
 // parse incoming requests
 app.use(bodyParser.json());
@@ -12,6 +13,17 @@ app.use(express.static(__dirname + '/public'));
 // view setting setup
 app.set('view engine', 'pug');
 app.set('views', __dirname + '/views');
+
+// Database connection
+mongoose.connect('mongodb://localhost:27017/trelloClone', {useNewUrlParser: true});
+const db = mongoose.connection;
+
+// database event listeners
+// if database connection fails
+db.on('error', (err) => {
+  console.error('[ERROR] Database unable to connect', err);
+});
+
 
 // app routes
 const homeRoutes = require('./routes/index');
