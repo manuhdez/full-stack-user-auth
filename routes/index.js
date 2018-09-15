@@ -13,7 +13,7 @@ router.get('/', (req, res, next) => {
 router.get('/signup', (req, res, next) => {
   User.find({}, (err, users) => {
     if (err) console.error(err);
-    users.forEach( user => console.log(user));
+    console.log(`There are ${users.length} users saved in the database`);
   })
   res.send('<h1>Singup form</h1>');
 });
@@ -30,11 +30,10 @@ router.post('/signup', (req, res, next) => {
 
   newUser.save((err) => {
     if (err) {
-      console.error('User not saved!');
+      console.error('User not saved!', err);
     }
+    res.redirect('/signup');
   });
-
-  res.redirect('/signup');
 });
 
 // LOGIN
