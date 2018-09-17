@@ -5,7 +5,17 @@ const User = require('../models/user');
 // HOMEPAGE
 // Renders the homepage
 router.get('/', (req, res, next) => {
-  res.send('<h1>Home page</h1>');
+  if (req.session.userID) {
+    User.findById({_id: req.session.userID})
+        .exec( (err, user) => {
+          if (err) {
+            const err = new Error('Ups, user not found.');
+            err.status = 500;
+            return next(err);
+          }
+          res.json(user);
+        });
+  }
 });
 
 // SIGNUP
@@ -44,7 +54,25 @@ router.get('/login', (req, res, next) => {
 
 // Get the user data and compare it with the database to authenticate the user
 router.post('/login', (req, res, next) => {
-  res.json(req.body);
+  // check if user entered an email and password
+  if (req.body.email && req.body.password) {
+    User.authenticate(req.body.email, req.body.password, function(error, user) {
+      if (error || !user) {
+        console.log('authentication failed', error);
+        console.log('authentication failed', user);
+        const err = new Error('[ERROR] Wrong email or password.');
+        err.status = 401;
+        return next(err);
+      } else {
+        req.session.userID = user._id;
+        return res.redirect('/');
+      }
+    });
+  } else {
+    const err = new Error('[ERROR] Email and password are required.');
+    err.status = 401;
+    return next(err);
+  }
 });
 
 module.exports = router;

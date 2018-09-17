@@ -17,12 +17,38 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true,
-    trim: true
+    trim: false
   },
   boards: [BoardSchema]
 });
 
-const User = mongoose.model('User', UserSchema);
+// User custom methods
+// User authentication
+UserSchema.statics.authenticate = function(email, password, callback) {
+  User.findOne({ 'email': email })
+      .exec( (error, user) => {
+        if (error) {
+          // handles if there is an unexpected error
+          return callback(error);
+        } else if (!user) {
+          // handles if the user you search for doesn't exist in the database
+          const err = new Error('[ERROR] - User not found.');
+          err.status = 401;
+          return callback(err);
+        } else {
+          // if there has been no error compare the typed password with the hashed password
+          bcrypt.compare(password, user.password, (error, result) => {
+            if (result) {
+              // pass null as a first parameter becouse the callback expects an error object
+              console.log('[UserSchema]: ', user)
+              return callback(null, user);
+            } else {
+              return callback();
+            }
+        });
+      }
+    });
+}
 
 // Execute password encryption before saving a new user to the database
 UserSchema.pre('save', function(next) {
@@ -38,8 +64,5 @@ UserSchema.pre('save', function(next) {
   });
 });
 
-UserSchema.post('save', function(next) {
-  console.log('A new user has been saved!');
-});
-
+const User = mongoose.model('User', UserSchema);
 module.exports = User;

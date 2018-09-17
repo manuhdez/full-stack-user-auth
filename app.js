@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
+const session = require('express-session');
+const mongoStore = require('connect-mongo')(session);
 
 // parse incoming requests
 app.use(bodyParser.json());
@@ -23,6 +25,16 @@ const db = mongoose.connection;
 db.on('error', (err) => {
   console.error('[ERROR] Database unable to connect', err);
 });
+
+// user session handler
+app.use(session({
+  secret: 'Thanks to trello',
+  resave: true,
+  saveUninitialized: false,
+  store: new mongoStore({
+    mongooseConnection: db
+  })
+}));
 
 
 // app routes
