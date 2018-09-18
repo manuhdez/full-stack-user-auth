@@ -13,7 +13,6 @@ router.get('/', (req, res, next) => {
             err.status = 500;
             return next(err);
           }
-          console.log(user);
           res.render('home', {name: user.name, id: user._id});
         });
   } else {
@@ -26,9 +25,8 @@ router.get('/', (req, res, next) => {
 router.get('/signup', (req, res, next) => {
   User.find({}, (err, users) => {
     if (err) console.error(err);
-    console.log(`There are ${users.length} users saved in the database`);
   })
-  res.send('<h1>Singup form</h1>');
+  res.render('signup');
 });
 
 // Sends the form data to mongodb and stores a new user
