@@ -5,19 +5,18 @@ const User = require('../models/user');
 // HOMEPAGE
 // Renders the homepage
 router.get('/', (req, res, next) => {
-  if (req.session.userID) {
-    User.findById({_id: req.session.userID})
-        .exec( (err, user) => {
-          if (err) {
-            const err = new Error('Ups, user not found.');
-            err.status = 500;
-            return next(err);
-          }
-          res.render('home', {name: user.name, id: user._id});
-        });
-  } else {
-    res.render('home');
+  if (!req.session.userID) {
+    return res.render('home');
   }
+  User.findById({_id: req.session.userID})
+      .exec( (err, user) => {
+        if (err) {
+          const err = new Error('Ups, user not found.');
+          err.status = 500;
+          return next(err);
+        }
+        return res.render('home', {name: user.name, id: user._id});
+      });
 });
 
 // SIGNUP
@@ -32,19 +31,25 @@ router.get('/signup', (req, res, next) => {
 // Sends the form data to mongodb and stores a new user
 router.post('/signup', (req, res, next) => {
 
-  const newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    boards: []
-  });
-
-  newUser.save((err) => {
-    if (err) {
-      console.error('User not saved!', err);
+  // check if all form data is received
+  if (req.body.name && req.body.email && req.body.password) {
+    // create a new object with the user info
+    const newUser = {
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      boards: []
     }
-    res.redirect('/signup');
-  });
+    // Use the create method to save a new user to the database
+    User.create(newUser, function(error, user) {
+      if (error) {
+        return next(error);
+      } else {
+        req.session.userID = user._id;
+        return res.redirect('/');
+      }
+    });
+  }
 });
 
 // LOGIN
