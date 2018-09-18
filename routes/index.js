@@ -13,8 +13,10 @@ router.get('/', (req, res, next) => {
             err.status = 500;
             return next(err);
           }
-          res.json(user);
+          res.render('home', {...user});
         });
+  } else {
+    res.render('home');
   }
 });
 
