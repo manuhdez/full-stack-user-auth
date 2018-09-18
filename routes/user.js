@@ -6,7 +6,8 @@ const router = express.Router();
 router.get('/:userID', (req, res, next) => {
   const user = req.params.userID;
   // res.send(`<h1>Page for the user ${user}</h1>`);
-  res.redirect('/login');
+  // res.render('profile');
+  res.send(`<h1>User ${user} profile</h1>`);
 });
 
 // create a new board for a user

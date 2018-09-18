@@ -13,7 +13,8 @@ router.get('/', (req, res, next) => {
             err.status = 500;
             return next(err);
           }
-          res.render('home', {...user});
+          console.log(user);
+          res.render('home', {name: user.name, id: user._id});
         });
   } else {
     res.render('home');
@@ -51,7 +52,7 @@ router.post('/signup', (req, res, next) => {
 // LOGIN
 // Render the login form
 router.get('/login', (req, res, next) => {
-  res.send('<h1>login form</h1>');
+  res.render('login');
 });
 
 // Get the user data and compare it with the database to authenticate the user
@@ -60,8 +61,6 @@ router.post('/login', (req, res, next) => {
   if (req.body.email && req.body.password) {
     User.authenticate(req.body.email, req.body.password, function(error, user) {
       if (error || !user) {
-        console.log('authentication failed', error);
-        console.log('authentication failed', user);
         const err = new Error('[ERROR] Wrong email or password.');
         err.status = 401;
         return next(err);
@@ -77,4 +76,7 @@ router.post('/login', (req, res, next) => {
   }
 });
 
+
+// logout route
+router.post('logout')
 module.exports = router;
