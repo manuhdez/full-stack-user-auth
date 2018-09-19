@@ -8,9 +8,9 @@ router.get('/', (req, res, next) => {
   if (!req.session.userID) {
     return res.render('home');
   }
-  User.findById({_id: req.session.userID})
-      .exec( (err, user) => {
-        if (err) {
+  User.findById(req.session.userID)
+      .exec( (error, user) => {
+        if (error) {
           const err = new Error('Ups, user not found.');
           err.status = 500;
           return next(err);

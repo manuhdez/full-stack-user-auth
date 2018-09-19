@@ -1,11 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/user');
 
 // User Routes
 // Render the User Page
 router.get('/:userID', (req, res, next) => {
   const user = req.params.userID;
-  // res.send(`<h1>Page for the user ${user}</h1>`);
+  // Find user data in mongo
+  User.findById(req.session.userID)
+    .exec( (error, user) => {
+      if (error) {
+        const err = new Error('Ups, we couldn\'t find the user');
+        err.status = 500;
+        return next(err);
+      } else {
+        return res.render('profile', user);
+      }
+    });
+  // Pass the boards to the pug template to render them
   // res.render('profile');
   res.send(`<h1>User ${user} profile</h1>`);
 });
