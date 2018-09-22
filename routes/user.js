@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const Board = require('../models/board');
 
 // User Routes
 // Render the User Page
 router.get('/:userID', (req, res, next) => {
-  const user = req.params.userID;
   // Find user data in mongo
   User.findById(req.session.userID)
     .exec( (error, user) => {
@@ -14,21 +14,27 @@ router.get('/:userID', (req, res, next) => {
         err.status = 500;
         return next(err);
       } else {
-        return res.render('profile', user);
+        // Pass the boards to the profile template to render
+        return res.render('profile', {name: user.name, id: user._id, boards: user.boards});
       }
     });
-  // Pass the boards to the pug template to render them
-  // res.render('profile');
-  res.send(`<h1>User ${user} profile</h1>`);
 });
 
 // create a new board for a user
 router.post('/:userID', (req, res, next) => {
-  // get the board data
-  const boardData = req.body;
-  // save the new board on the database inside the users profile
-  // redirect to /:userID to see the updated page with the new board
-  res.redirect('/:userID');
+  // get the board data from the user
+  const newBoardList = [{
+    title: req.body.boardTitle,
+    lists: []
+  }];
+
+  // Push the new board to the users boards array
+  User.findByIdAndUpdate(req.session.userID, { $push: { boards: newBoardList}}, {new: true}, function(err, user) {
+    if (err) return next(err);
+    // redirect to /:userID to see the updated page with the new board
+    res.redirect('/users/' + req.session.userID);
+  });
+
 });
 
 // update the board info (name)
@@ -47,6 +53,7 @@ router.put('/:userID', (req, res, next) => {
 router.get('/:userID/boards/:boardID', (req, res, next) => {
   // Gets the board info from the database
   // Renders every list of the board
+  res.json(req.params)
 });
 
 // create a new list on the board
