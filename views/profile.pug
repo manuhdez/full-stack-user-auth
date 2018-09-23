@@ -3,6 +3,7 @@ extends layout
 block content
   include navbar
   .container
+    #spacing-box
     .row
       each board in boards
         div(class="col s12 m6")
@@ -14,11 +15,11 @@ block content
       else
         h3 You have no boards
 
-    .row
-      p Add a new board below
-      form(action="/users/" + id, method="post", class="col s12")
-        div(class="input-field col s6")
-          input(type="text", name="boardTitle", id="board-name")
-          label(for="board-name") Board Name
-        button(type="submit", name="action", class="btn waves-effect waves-light") Create
+      div(class="col s12 m6")
+        div(class="card")
+          form(action="/users/" + id, method="post", class="col s12")
+            div(class="input-field")
+              input(type="text", name="boardTitle", id="board-name")
+              label(for="board-name") Board Name
+            button(type="submit", name="action", class="btn waves-effect waves-light") Create
 
