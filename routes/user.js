@@ -64,23 +64,32 @@ router.put('/:userID', (req, res, next) => {
 // render the board content
 router.get('/:userID/boards/:boardID', (req, res, next) => {
   // Gets the board info from the database
-  console.log(req.board)
   // Renders every list of the board
   res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
 });
 
 // create a new list on the board
 router.post('/:userID/boards/:boardID', (req, res, next) => {
-  const boardID = req.board._id;
-  const newList = req.body.title;
-  console.log(newList);
-  // Saves the new list to the database
-  User.findByIdAndUpdate(req.user._id, { $push: { "boards.boardID.lists": newList }}, {new: true}, (err, user) => {
+  // create a copy of the previous boards array
+  let prevBoards = req.user.boards.slice();
+  // create an empty array that will hold the updated version of the boards array
+  let newBoards = [];
+  // Iterate over the boards to push them inside the new boards array and modify the one needed to save the new list
+  prevBoards.forEach( board => {
+    if (board.title === req.board.title) {
+      board.lists.push({title: req.body.title, items: []});
+    }
+    newBoards.push(board);
+  });
+
+
+  // Updates the boards array in the user data
+  User.findByIdAndUpdate(req.user._id, { $set: { "boards": newBoards }}, {new: true}, (err, user) => {
     if (err) return next(err);
 
+    // Redirects to the board view
     res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
   });
-  // Redirects to the board view
 });
 
 
