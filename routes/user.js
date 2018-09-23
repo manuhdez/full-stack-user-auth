@@ -1,23 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const Board = require('../models/board');
+
+// Add middleware to be able to acces the user data whenever the url includes the user id
+router.param("userID", (req, res, next, id) => {
+  User.findById(id, (err, doc) => {
+    if (err) return next(err);
+    if (!doc) {
+      const err = new Error('User Not Found.');
+      err.status = 404;
+      return next(err);
+    }
+    req.user = doc;
+    return next();
+  });
+});
+
+router.param('boardID', (req, res, next, id) => {
+  req.board = req.user.boards.id(id);
+  if (!req.board) {
+    const err = new Error('Board Not Found.');
+    err.status = 404;
+    return next(err);
+  }
+  return next();
+});
 
 // User Routes
 // Render the User Page
 router.get('/:userID', (req, res, next) => {
-  // Find user data in mongo
-  User.findById(req.session.userID)
-    .exec( (error, user) => {
-      if (error) {
-        const err = new Error('Ups, we couldn\'t find the user');
-        err.status = 500;
-        return next(err);
-      } else {
-        // Pass the boards to the profile template to render
-        return res.render('profile', {name: user.name, id: user._id, boards: user.boards});
-      }
-    });
+  return res.render('profile', {name: req.user.name, id: req.user._id, boards: req.user.boards});
 });
 
 // create a new board for a user
@@ -52,29 +64,38 @@ router.put('/:userID', (req, res, next) => {
 // render the board content
 router.get('/:userID/boards/:boardID', (req, res, next) => {
   // Gets the board info from the database
+  console.log(req.board)
   // Renders every list of the board
-  res.json(req.params)
+  res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
 });
 
 // create a new list on the board
 router.post('/:userID/boards/:boardID', (req, res, next) => {
+  const boardID = req.board._id;
+  const newList = req.body.title;
+  console.log(newList);
   // Saves the new list to the database
+  User.findByIdAndUpdate(req.user._id, { $push: { "boards.boardID.lists": newList }}, {new: true}, (err, user) => {
+    if (err) return next(err);
+
+    res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
+  });
   // Redirects to the board view
 });
 
 
 // LISTS
 // create a new list item
-router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
+// router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
   // save the list into the database
   // redirect to the boardID
-});
+// });
 
 // edit the list and save the changes to the database
-router.put('/:userID/boards/:boardID/:listID', (req, res, next) => {
+// router.put('/:userID/boards/:boardID/:listID', (req, res, next) => {
   // save the new list
   // redirect to the boardID
-});
+// });
 
 
 module.exports = router;
