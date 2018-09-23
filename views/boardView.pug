@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  include navbar
+  .container
+    .row
+      h2= title
+    .row
+      each list in lists
+        div(class="col s12 m6")
+          div(class="card blue lighten-4")
+            div(class="card-content white-text")
+              span(class="card-title") #{list.title}
+      else
+        h4 This board it's still empty
+
+    .row
+      p Add a new list
+      form(action="/users/" + id + "/boards/" + boardID, method="post", class="col s12")
+        div(class="input-field col s6")
+          input(type="text", name="title", id="list-name")
+          label(for="list-name") List Name
+        button(type="submit", name="action", class="btn waves-effect waves-light") Create
+

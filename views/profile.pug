@@ -6,11 +6,11 @@ block content
     .row
       each board in boards
         div(class="col s12 m6")
-          div(class="card blue-grey darken-1")
-            div(class="card-content white-text")
+          div(class="card")
+            div(class="card-content")
               span(class="card-title") #{board.title}
             .card-action
-              a(href="/users/" + id + "/boards/" +board.id) Open board
+              a(href="/users/" + id + "/boards/" +board.id, class="blue-text text-darken-2") Open board
       else
         h3 You have no boards
 
