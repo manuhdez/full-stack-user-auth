@@ -13,7 +13,12 @@ router.param("userID", (req, res, next, id) => {
       return next(err);
     }
     req.user = doc;
-    return next();
+    Board.find({"author": id}, (err, board) => {
+      if (err) return next(err);
+      if (!board) return next();
+      req.userBoards = board;
+      next();
+    });
   });
 });
 
@@ -30,24 +35,22 @@ router.param('boardID', (req, res, next, id) => {
 // User Routes
 // Render the User Page
 router.get('/:userID', (req, res, next) => {
-  return res.render('profile', {name: req.user.name, id: req.user._id, boards: req.user.boards});
+  return res.render('profile', {name: req.user.name, id: req.user._id, boards: req.userBoards});
 });
 
 // create a new board for a user
 router.post('/:userID', (req, res, next) => {
   // get the board data from the user
-  const newBoardList = [{
+  const newBoard = {
     title: req.body.boardTitle,
+    author: req.user._id,
     lists: []
-  }];
+  };
 
-  // Push the new board to the users boards array
-  User.findByIdAndUpdate(req.session.userID, { $push: { boards: newBoardList}}, {new: true}, function(err, user) {
+  Board.create(newBoard, (err) => {
     if (err) return next(err);
-    // redirect to /:userID to see the updated page with the new board
-    res.redirect('/users/' + req.session.userID);
+    return res.redirect(`/users/${req.user._id}`);
   });
-
 });
 
 

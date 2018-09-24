@@ -20,4 +20,3 @@ const BoardSchema = new Schema({
 const Board = mongoose.model('Board', BoardSchema);
 
 module.exports = Board;
-module.exports = BoardSchema;

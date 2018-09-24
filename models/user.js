@@ -2,9 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
 
-// import the BoardSchema to insert it inside the UserSchema
-const BoardSchema = require('./board');
-
 // user object template
 const UserSchema = new Schema({
   name: String,
@@ -18,8 +15,7 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     trim: false
-  },
-  boards: [BoardSchema]
+  }
 });
 
 // User custom methods
