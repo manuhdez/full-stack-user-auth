@@ -9,7 +9,13 @@ const BoardSchema = new Schema({
     type: String,
     required: true
   },
+  author: {
+    type: String,
+    required: true
+  },
   lists: [ListSchema]
 });
 
-module.exports = BoardSchema;
+const Board = mongoose.model('Board', BoardSchema);
+
+module.exports = Board;
