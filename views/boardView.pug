@@ -14,6 +14,9 @@ block content
               ul
                 each item in list.items
                   li= item
+            form(action="/users/" + id + "/boards/" + boardID + "/" + list._id, method="post")
+              input(type="text", name="item", placeholder="add a new item")
+              button(type="submit", name="action", class="btn waves-effect waves-light") Add
       else
         h4 This board it's still empty
 
