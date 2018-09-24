@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const Board = require('../models/board');
 
 // Add middleware to be able to acces the user data whenever the url includes the user id
 router.param("userID", (req, res, next, id) => {
@@ -49,6 +50,7 @@ router.post('/:userID', (req, res, next) => {
 
 });
 
+
 // update the board info (name)
 router.put('/:userID', (req, res, next) => {
   // get the board data
@@ -94,11 +96,36 @@ router.post('/:userID/boards/:boardID', (req, res, next) => {
 
 
 // LISTS
-// create a new list item
-// router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
+// add a new item into the list
+router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
   // save the list into the database
   // redirect to the boardID
-// });
+  let prevBoards = req.user.boards.slice();
+  let newBoards = [];
+
+  console.log('hello im trying to add a new item to a list');
+
+  // iterate each board
+  prevBoards.forEach( board => {
+    // when the board matches the id of the route run this code
+    if (board._id === req.board._id) {
+      // iterate the lists to find the current list
+      board.lists.map( list => {
+        // when the list id equals the :listID param push the new item
+        if (list._id === req.params.listID) {
+          let newList = list.slice();
+          newList.items.push(req.body.item);
+          list = newList;
+        }
+      });
+    }
+
+    newBoards.push(board);
+  });
+
+  res.json(newBoards);
+});
+
 
 // edit the list and save the changes to the database
 // router.put('/:userID/boards/:boardID/:listID', (req, res, next) => {
