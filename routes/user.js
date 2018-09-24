@@ -23,17 +23,20 @@ router.param("userID", (req, res, next, id) => {
 });
 
 router.param('boardID', (req, res, next, id) => {
-  req.board = req.user.boards.id(id);
-  if (!req.board) {
-    const err = new Error('Board Not Found.');
-    err.status = 404;
-    return next(err);
-  }
-  return next();
+  Board.findById(id, (err, board) => {
+    if (err) return next(err);
+    if (!board) {
+      const error = new Error('[ERROR] Board not found');
+      error.status = 404;
+      return next(error);
+    }
+    req.board = board;
+    next();
+  });
 });
 
-// User Routes
-// Render the User Page
+
+// GET THE USER PAGE AND RENDERS THE USER'S BOARDS
 router.get('/:userID', (req, res, next) => {
   return res.render('profile', {name: req.user.name, id: req.user._id, boards: req.userBoards});
 });
@@ -54,22 +57,10 @@ router.post('/:userID', (req, res, next) => {
 });
 
 
-// update the board info (name)
-router.put('/:userID', (req, res, next) => {
-  // get the board data
-  const boardData = req.body;
-  // get the board from the database
-  // replace it with the new name
-  // save the new board name on the database
-  // redirect to /:userID to see the updated page with the new board
-  res.redirect('/:userID');
-});
-
 // BOARDS
-// render the board content
+// RENDERS THE LISTS INSIDE THE BOARD
 router.get('/:userID/boards/:boardID', (req, res, next) => {
-  // Gets the board info from the database
-  // Renders every list of the board
+  // Gets the board info from the database and save it into "req.board"
   res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
 });
 
