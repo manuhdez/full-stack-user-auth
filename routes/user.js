@@ -78,6 +78,7 @@ router.post('/:userID', (req, res, next) => {
 // RENDERS THE LISTS INSIDE THE BOARD
 router.get('/:userID/boards/:boardID', (req, res, next) => {
   // Gets the board info from the database and save it into "req.board"
+  // Get the lists
   res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
 });
 
@@ -105,32 +106,27 @@ router.post('/:userID/boards/:boardID', (req, res, next) => {
 // LISTS
 // add a new item into the list
 router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
-  // save the list into the database
-  // redirect to the boardID
-  let prevBoards = req.user.boards.slice();
-  let newBoards = [];
+  const newItem = req.body.item;
+  // update the list info pushing the new item into the item array
+  List.findByIdAndUpdate(req.list._id, {$push: {'items': newItem}}, {new: true}, (err, list) => {
+    if (err) return next(err);
 
-  console.log('hello im trying to add a new item to a list');
+    // update the boards lists with the updated list
+    List.find({'origin': req.board._id}, (err, lists) => {
+      if (err) return next(err);
+      if (!lists) {
+        const error = new Error('[ERROR] No Lists found.');
+        error.status = 404;
+        return next(error);
+      }
+      // Update the board with the updated lists
+      Board.findByIdAndUpdate(req.board._id, {$set: {'lists': lists}}, {new: true}, (err, board) => {
+        if (err) return next(err);
 
-  // iterate each board
-  prevBoards.forEach( board => {
-    // when the board matches the id of the route run this code
-    if (board._id === req.board._id) {
-      // iterate the lists to find the current list
-      board.lists.map( list => {
-        // when the list id equals the :listID param push the new item
-        if (list._id === req.params.listID) {
-          let newList = list.slice();
-          newList.items.push(req.body.item);
-          list = newList;
-        }
+        return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
       });
-    }
-
-    newBoards.push(board);
+    });
   });
-
-  res.json(newBoards);
 });
 
 module.exports = router;
