@@ -18,6 +18,7 @@ app.set('views', __dirname + '/views');
 
 // Database connection
 mongoose.connect('mongodb://localhost:27017/trelloClone', {useNewUrlParser: true});
+// mongoose.connect('mongodb://manuhdez:trello-clone-2018@ds111913.mlab.com:11913/trello-clone-db', {useNewUrlParser: true});
 const db = mongoose.connection;
 
 // database event listeners
