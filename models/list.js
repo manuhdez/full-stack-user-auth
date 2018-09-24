@@ -6,6 +6,10 @@ const ListSchema = new Schema({
     type: String,
     required: true
   },
+  origin: {
+    type: String,
+    required: true
+  },
   items: Array
 });
 

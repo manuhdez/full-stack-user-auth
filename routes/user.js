@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const Board = require('../models/board');
+// Import the List model
+const listObject = require('../models/list');
+const List = listObject.model;
 
 // Add middleware to be able to acces the user data whenever the url includes the user id
 router.param("userID", (req, res, next, id) => {
@@ -22,6 +25,7 @@ router.param("userID", (req, res, next, id) => {
   });
 });
 
+// MAKES AVAILABLE THE CURRENT BOARD INFO
 router.param('boardID', (req, res, next, id) => {
   Board.findById(id, (err, board) => {
     if (err) return next(err);
@@ -64,27 +68,23 @@ router.get('/:userID/boards/:boardID', (req, res, next) => {
   res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
 });
 
-// create a new list on the board
+// ADD A NEW LIST INSIDE THE BOARD
 router.post('/:userID/boards/:boardID', (req, res, next) => {
   // create a copy of the previous boards array
-  let prevBoards = req.user.boards.slice();
-  // create an empty array that will hold the updated version of the boards array
-  let newBoards = [];
-  // Iterate over the boards to push them inside the new boards array and modify the one needed to save the new list
-  prevBoards.forEach( board => {
-    if (board.title === req.board.title) {
-      board.lists.push({title: req.body.title, items: []});
-    }
-    newBoards.push(board);
-  });
+  const newList = {
+    title: req.body.title,
+    origin: req.board._id,
+    items: []
+  }
 
-
-  // Updates the boards array in the user data
-  User.findByIdAndUpdate(req.user._id, { $set: { "boards": newBoards }}, {new: true}, (err, user) => {
+  // Add a new list to the database
+  List.create(newList, (err, list) => {
     if (err) return next(err);
-
-    // Redirects to the board view
-    res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
+    // Update the board including the reference to the list in it
+    Board.findByIdAndUpdate(req.board._id, {$push: {'lists': list}}, {new: true}, (err) => {
+      if (err) return next(err);
+      return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
+    });
   });
 });
 
@@ -119,13 +119,5 @@ router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
 
   res.json(newBoards);
 });
-
-
-// edit the list and save the changes to the database
-// router.put('/:userID/boards/:boardID/:listID', (req, res, next) => {
-  // save the new list
-  // redirect to the boardID
-// });
-
 
 module.exports = router;
