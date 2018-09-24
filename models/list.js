@@ -9,4 +9,9 @@ const ListSchema = new Schema({
   items: Array
 });
 
-module.exports = ListSchema;
+const List = mongoose.model('List', ListSchema);
+
+module.exports = {
+  schema: ListSchema,
+  model: List
+};
