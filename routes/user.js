@@ -39,6 +39,19 @@ router.param('boardID', (req, res, next, id) => {
   });
 });
 
+// MAKE AVAILABLE THE SPECIFIED LIST INFO
+router.param('listID', (req, res, next, id) => {
+  List.findById(id, (err, list) => {
+    if (err) return next(err);
+    if (!list) {
+      const error = new Error('[ERROR] List not found.');
+      error.status = 404;
+      return next(error);
+    }
+    req.list = list;
+    next();
+  });
+});
 
 // GET THE USER PAGE AND RENDERS THE USER'S BOARDS
 router.get('/:userID', (req, res, next) => {
