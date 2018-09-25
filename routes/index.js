@@ -22,25 +22,20 @@ router.get('/', (req, res, next) => {
 // SIGNUP
 // Render the signup form to create a new user
 router.get('/signup', (req, res, next) => {
-  User.find({}, (err, users) => {
-    if (err) console.error(err);
-  })
   res.render('signup');
 });
 
 // Sends the form data to mongodb and stores a new user
 router.post('/signup', (req, res, next) => {
-
-  // check if all form data is received
+  // check if all required data is received
   if (req.body.name && req.body.email && req.body.password) {
-    // create a new object with the user info
+    // create a new user with the info received
     const newUser = {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-      boards: []
     }
-    // Use the create method to save a new user to the database
+
     User.create(newUser, function(error, user) {
       if (error) {
         return next(error);
@@ -60,7 +55,7 @@ router.get('/login', (req, res, next) => {
 
 // Get the user data and compare it with the database to authenticate the user
 router.post('/login', (req, res, next) => {
-  // check if user entered an email and password
+  // check if user entered required data
   if (req.body.email && req.body.password) {
     User.authenticate(req.body.email, req.body.password, function(error, user) {
       if (error || !user) {
@@ -95,4 +90,5 @@ router.get('/logout', (req, res, next) => {
     return res.redirect('/');
   }
 });
+
 module.exports = router;
