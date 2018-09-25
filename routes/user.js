@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
+
+// Import database models
 const User = require('../models/user');
 const Board = require('../models/board');
-// Import the List model
-const listObject = require('../models/list');
-const List = listObject.model;
+const List = require('../models/list');
 
 // Add middleware to be able to acces the user data whenever the url includes the user id
 router.param("userID", (req, res, next, id) => {
@@ -77,9 +77,14 @@ router.post('/:userID', (req, res, next) => {
 // BOARDS
 // RENDERS THE LISTS INSIDE THE BOARD
 router.get('/:userID/boards/:boardID', (req, res, next) => {
-  // Gets the board info from the database and save it into "req.board"
-  // Get the lists
-  res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: req.board.lists})
+  // Gets the board info from "req.board"
+  // Gets the user info from "req.user"
+  // Find all lists matching the boardID in their origin property
+  List.find({origin: req.board._id}, (err, lists) => {
+    if (err) return next(err);
+
+    res.render('boardView', {name: req.user.name, id: req.user._id, title: req.board.title, boardID: req.board._id, lists: lists})
+  });
 });
 
 // ADD A NEW LIST INSIDE THE BOARD
@@ -92,13 +97,9 @@ router.post('/:userID/boards/:boardID', (req, res, next) => {
   }
 
   // Add a new list to the database
-  List.create(newList, (err, list) => {
+  List.create(newList, (err) => {
     if (err) return next(err);
-    // Update the board including the reference to the list in it
-    Board.findByIdAndUpdate(req.board._id, {$push: {'lists': list}}, {new: true}, (err) => {
-      if (err) return next(err);
-      return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
-    });
+    return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
   });
 });
 
@@ -108,24 +109,9 @@ router.post('/:userID/boards/:boardID', (req, res, next) => {
 router.post('/:userID/boards/:boardID/:listID', (req, res, next) => {
   const newItem = req.body.item;
   // update the list info pushing the new item into the item array
-  List.findByIdAndUpdate(req.list._id, {$push: {'items': newItem}}, {new: true}, (err, list) => {
+  List.findByIdAndUpdate(req.list._id, {$push: {'items': newItem}}, {new: true}, (err) => {
     if (err) return next(err);
-
-    // update the boards lists with the updated list
-    List.find({'origin': req.board._id}, (err, lists) => {
-      if (err) return next(err);
-      if (!lists) {
-        const error = new Error('[ERROR] No Lists found.');
-        error.status = 404;
-        return next(error);
-      }
-      // Update the board with the updated lists
-      Board.findByIdAndUpdate(req.board._id, {$set: {'lists': lists}}, {new: true}, (err, board) => {
-        if (err) return next(err);
-
-        return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
-      });
-    });
+    return res.redirect(`/users/${req.user._id}/boards/${req.board._id}`);
   });
 });
 
